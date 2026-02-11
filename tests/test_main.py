@@ -1,5 +1,3 @@
-
-
 from app.main import hello_world
 
 

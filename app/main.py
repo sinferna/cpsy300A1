@@ -1,5 +1,3 @@
-
-
 def hello_world():
     """
     Simulated serverless function.
