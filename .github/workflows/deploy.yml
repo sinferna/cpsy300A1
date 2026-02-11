@@ -2,20 +2,40 @@ name: CI/CD Pipeline Simulation
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
+  build-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # 1. Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Simulated CI step
-        run: |
-          echo "Build and test simulation successful."
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-      - name: Simulated deployment step
+      # 3. Install dependencies
+      - name: Install dependencies
         run: |
-          echo "Simulated deployment completed."
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 4. Lint Python code
+      - name: Lint code
+        run: |
+          flake8 .
+          black --check .
+
+      # 5. Run Python tests
+      - name: Run tests
+        run: |
+          pytest

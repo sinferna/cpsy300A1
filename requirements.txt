@@ -1,0 +1,4 @@
+# Testing and linting simulation
+pytest==7.4.2
+flake8==6.1.0
+black==24.3.0
