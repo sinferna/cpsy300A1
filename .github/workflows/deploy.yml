@@ -1,3 +1,47 @@
+# name: CI/CD Pipeline Simulation
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
+
+# jobs:
+#   build-test:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       # 1. Checkout repository
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       # 2. Set up Python
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.11'
+
+#       # 3. Install dependencies
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r requirements.txt
+
+#       # 4. Lint Python code
+#       - name: Lint code
+#         run: |
+#           flake8 .
+#           black --check .
+
+#       # 5. Run Python tests
+#       - name: Run tests
+#         env:
+#           PYTHONPATH: ${{ github.workspace }}
+#         run: |
+#           pytest
+
 name: CI/CD Pipeline Simulation
 
 on:
@@ -23,11 +67,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 3. Install dependencies
+      # 3. Install dependencies (minimal for faster startup)
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt --no-cache-dir
 
       # 4. Lint Python code
       - name: Lint code
@@ -35,10 +79,24 @@ jobs:
           flake8 .
           black --check .
 
-      # 5. Run Python tests
+      # 5. Run Python tests with database optimization & preloaded modules
       - name: Run tests
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          pytest
+          python -c "
+import sqlite3
 
+# Inline DB optimization: create index and batch setup for faster queries
+try:
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute('CREATE INDEX IF NOT EXISTS idx_id ON records(id)')
+    conn.commit()
+finally:
+    conn.close()
+
+# Preload critical modules to reduce cold start
+import function  # your serverless function
+"
+          pytest
